@@ -1,0 +1,36 @@
+name: Update Candlestick Chart
+
+on:
+  workflow_dispatch:  # Triggered by the refresh button
+
+jobs:
+  update-chart:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Clone stocks_prediction_rnn_v2
+        run: |
+          git clone https://github.com/chiragpalan/stocks_prediction_rnn_v2.git
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: |
+          pip install pandas plotly
+
+      - name: Generate candlestick chart
+        run: python generate_chart.py
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "Your Name"
+          git config --global user.email "your-email@example.com"
+          git add docs/chart.html
+          git commit -m "Updated candlestick chart with predictions"
+          git push
