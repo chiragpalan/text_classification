@@ -1,3 +1,4 @@
+import sqlite3
 import pandas as pd
 import plotly.graph_objects as go
 
@@ -18,6 +19,14 @@ def create_candlestick_chart(df, title, filename):
                                          close=df['Close'])])
     fig.update_layout(title=title, xaxis_title='Datetime', yaxis_title='Price')
     fig.write_html(f'docs/{filename}.html')
+
+# Connect to the databases
+conn_nifty50 = sqlite3.connect('databases/nifty50_data_v1.db')
+conn_pred = sqlite3.connect('databases/predictions.db')
+
+# Fetch tables in the databases, excluding sqlite_sequence from nifty50_data_v1.db
+tables_nifty50 = pd.read_sql_query("SELECT name FROM sqlite_master WHERE type='table' AND name != 'sqlite_sequence';", conn_nifty50)["name"].tolist()
+tables_pred = pd.read_sql_query("SELECT name FROM sqlite_master WHERE type='table';", conn_pred)["name"].tolist()
 
 # Process all tables in nifty50_data_v1.db
 dfs_nifty50 = {table: process_table(conn_nifty50, table) for table in tables_nifty50}
