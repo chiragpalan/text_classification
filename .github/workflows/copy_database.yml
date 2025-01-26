@@ -1,45 +1,36 @@
-name: Copy Databases and Generate Charts
+name: Copy Databases
 
 on:
   workflow_dispatch:
 
 jobs:
-  copy-databases-and-generate-charts:
+  copy-databases:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout Current Repo
-      uses: actions/checkout@v3
-      with:
-        path: current_repo
+      # Step 1: Checkout the text_classification repository
+      - name: Checkout text_classification repository
+        uses: actions/checkout@v3
 
-    - name: Checkout Source Repo (stocks_prediction_rnn_v2)
-      uses: actions/checkout@v3
-      with:
-        repository: chiragpalan/stocks_prediction_rnn_v2
-        path: source_repo
-        token: ${{ secrets['generate charts'] }}
+      # Step 2: Checkout the stocks_prediction_rnn_v2 repository
+      - name: Checkout stocks_prediction_rnn_v2 repository
+        uses: actions/checkout@v3
+        with:
+          repository: chiragpalan/stocks_prediction_rnn_v2
+          path: source_repo
+          token: ${{ secrets.GENERATE_CHARTS }}
 
-    - name: Copy Databases
-      run: |
-        mkdir -p current_repo/databases
-        cp source_repo/nifty50_data_v1.db current_repo/databases/
-        cp source_repo/predictions/predictions.db current_repo/databases/
+      # Step 3: Copy the databases from the source repository to the target location
+      - name: Copy databases
+        run: |
+          mkdir -p databases
+          cp source_repo/nifty50_data_v1.db databases/
+          cp source_repo/predictions/predictions.db databases/
 
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r current_repo/requirements.txt
-
-    - name: Generate Candlestick Charts
-      run: |
-        python current_repo/generate_chart.py
-
-    - name: Push Generated Charts to GitHub Pages
-      run: |
-        cd current_repo
-        git config --global user.name "GitHub Actions"
-        git config --global user.email "actions@github.com"
-        git add .
-        git commit -m "Generated candlestick charts"
-        git push
+      # Step 4: Push the copied databases back to the text_classification repository
+      - name: Push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add databases/nifty50_data_v1.db databases/predictions.db
+          git commit -m "Add databases from stocks_prediction_rnn_v2"
+          git push
