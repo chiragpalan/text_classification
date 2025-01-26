@@ -1,36 +1,53 @@
-name: Copy Databases
+name: Copy Databases Workflow
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # Allows manual triggering of the workflow
 
 jobs:
-  copy-databases:
+  copy_databases:
     runs-on: ubuntu-latest
+
     steps:
-      # Step 1: Checkout the text_classification repository
-      - name: Checkout text_classification repository
-        uses: actions/checkout@v3
+    # Checkout the target repository
+    - name: Checkout source repository
+      uses: actions/checkout@v3
+      with:
+        repository: chiragpalan/stock_prediction_rnn_v2
+        token: ${{ secrets.GENERATE_CHARTS }} # Ensure the token is set with proper permissions
+        path: source_repo
+        ref: main # Replace 'main' with the actual default branch if it's different
 
-      # Step 2: Checkout the stocks_prediction_rnn_v2 repository
-      - name: Checkout stock_prediction_rnn_v2 repository
-        uses: actions/checkout@v3
-        with:
-          repository: chiragpalan/stock_prediction_rnn_v2
-          path: source_repo
-          token: ${{ secrets.GENERATE_CHARTS }}
+    # Checkout the destination repository
+    - name: Checkout destination repository
+      uses: actions/checkout@v3
+      with:
+        repository: chiragpalan/text_classification
+        token: ${{ secrets.GENERATE_CHARTS }}
+        path: destination_repo
+        ref: main # Replace 'main' with the actual default branch if it's different
 
-      # Step 3: Copy the databases from the source repository to the target location
-      - name: Copy databases
-        run: |
-          mkdir -p databases
-          cp source_repo/nifty50_data_v1.db databases/
-          cp source_repo/predictions/predictions.db databases/
+    # Copy databases from source to destination
+    - name: Copy Databases
+      run: |
+        # Ensure destination folder exists
+        mkdir -p destination_repo/databases
+        
+        # Copy databases
+        cp -r source_repo/nifty50_data_v1.db destination_repo/databases/
+        cp -r source_repo/predictions/predictions.db destination_repo/databases/
 
-      # Step 4: Push the copied databases back to the text_classification repository
-      - name: Push changes
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add databases/nifty50_data_v1.db databases/predictions.db
-          git commit -m "Add databases from stocks_prediction_rnn_v2"
-          git push
+    # Commit and push changes to the destination repository
+    - name: Commit and Push Changes
+      run: |
+        cd destination_repo
+        
+        # Configure git
+        git config --global user.name "chiragpalan"
+        git config --global user.email "your-email@example.com" # Replace with your GitHub email
+        
+        # Commit changes
+        git add databases/
+        git commit -m "Copied databases from stock_prediction_rnn_v2 to text_classification"
+
+        # Push changes
+        git push origin main # Ensure the branch matches the destination repository's default branch
