@@ -1,10 +1,7 @@
 name: Generate Candlestick Chart
 
 on:
-  push:
-    branches:
-      - main
-
+  workflow_dispatch:  # Triggered by the refresh button
 jobs:
   generate-chart:
     runs-on: ubuntu-latest
