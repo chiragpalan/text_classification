@@ -1,10 +1,10 @@
-name: Copy Databases from Another Repo
+name: Copy Databases and Generate Charts
 
 on:
   workflow_dispatch:
 
 jobs:
-  copy-databases:
+  copy-databases-and-generate-charts:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,7 +18,7 @@ jobs:
       with:
         repository: chiragpalan/stocks_prediction_rnn_v2
         path: source_repo
-        token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        token: ${{ secrets['generate charts'] }}
 
     - name: Copy Databases
       run: |
@@ -26,11 +26,20 @@ jobs:
         cp source_repo/nifty50_data_v1.db current_repo/databases/
         cp source_repo/predictions/predictions.db current_repo/databases/
 
-    - name: Push Changes to Current Repo
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r current_repo/requirements.txt
+
+    - name: Generate Candlestick Charts
+      run: |
+        python current_repo/generate_chart.py
+
+    - name: Push Generated Charts to GitHub Pages
       run: |
         cd current_repo
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
-        git add databases/
-        git commit -m "Copied databases from stocks_prediction_rnn_v2"
+        git add .
+        git commit -m "Generated candlestick charts"
         git push
