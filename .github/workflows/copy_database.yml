@@ -1,0 +1,39 @@
+name: Copy Databases from stocks_prediction_rnn_v2
+
+on:
+  workflow_dispatch:  # Triggered by the refresh button
+
+jobs:
+  copy-databases:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout text_classification repository
+      - name: Checkout text_classification
+        uses: actions/checkout@v3
+
+      # Step 2: Download specific files from stocks_prediction_rnn_v2
+      - name: Copy Databases
+        run: |
+          curl -H "Authorization: token ${{ secrets.GH_PAT }}" \
+            -L https://raw.githubusercontent.com/chiragpalan/stocks_prediction_rnn_v2/main/nifty50_data_v1.db \
+            -o nifty50_data_v1.db
+          curl -H "Authorization: token ${{ secrets.GH_PAT }}" \
+            -L https://raw.githubusercontent.com/chiragpalan/stocks_prediction_rnn_v2/main/predictions/predictions.db \
+            -o predictions.db
+
+      # Step 3: Move the databases to the desired folder in text_classification
+      - name: Move Databases
+        run: |
+          mkdir -p databases
+          mv nifty50_data_v1.db databases/
+          mv predictions.db databases/
+
+      # Step 4: Commit and push the changes to text_classification
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "chiragpalan"
+          git config --global user.email "your-email@example.com"
+          git add databases/
+          git commit -m "Add databases from stocks_prediction_rnn_v2"
+          git push origin main
