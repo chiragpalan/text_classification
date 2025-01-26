@@ -1,25 +1,52 @@
-name: Run Python Script
+name: Generate Candlestick Charts
 
 on:
-  workflow_dispatch:  # Triggered by the refresh button
+  workflow_dispatch: # Manual trigger
+  schedule:
+    - cron: "0 18 * * 1-5" # Run daily at 6:00 PM UTC, Monday to Friday
 
 jobs:
-  run_script:
+  generate-charts:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      # Checkout the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
+      # Set up Python environment
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pandas plotly
+      # Install dependencies
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas plotly
 
-    - name: Run Python script
-      run: python generate_chart.py
+      # Run the Python script to generate candlestick charts
+      - name: Generate Candlestick Charts
+        run: python generate_chart.py
+
+      # Deploy charts to GitHub Pages
+      - name: Deploy Charts to GitHub Pages
+        if: success()
+        run: |
+          # Configure Git
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+          # Create gh-pages branch if it doesn't exist
+          git fetch origin gh-pages || echo "gh-pages does not exist yet."
+          git checkout gh-pages || git checkout --orphan gh-pages
+
+          # Remove old charts and add new ones
+          rm -rf *.html
+          mv charts/* .
+          git add *.html
+
+          # Commit and push
+          git commit -m "Update candlestick charts"
+          git push origin gh-pages
