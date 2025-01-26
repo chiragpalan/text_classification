@@ -12,10 +12,10 @@ jobs:
         uses: actions/checkout@v3
 
       # Step 2: Checkout the stocks_prediction_rnn_v2 repository
-      - name: Checkout stocks_prediction_rnn_v2 repository
+      - name: Checkout stock_prediction_rnn_v2 repository
         uses: actions/checkout@v3
         with:
-          repository: chiragpalan/stocks_prediction_rnn_v2
+          repository: chiragpalan/stock_prediction_rnn_v2
           path: source_repo
           token: ${{ secrets.GENERATE_CHARTS }}
 
